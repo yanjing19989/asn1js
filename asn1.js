@@ -557,6 +557,9 @@ export class ASN1 {
     toHexString(type = 'raw') {
         return this.stream.hexDump(this.posStart(), this.posEnd(), type);
     }
+    toHexValue(type = 'raw') {
+        return this.stream.hexDump(this.posContent(), this.posEnd(), type);
+    }
     /** Base64 dump of the node. */
     toB64String() {
         return this.stream.b64Dump(this.posStart(), this.posEnd());

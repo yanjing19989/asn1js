@@ -4,7 +4,8 @@ const
     btnCopyHex = id('btnCopyHex'),
     btnCopyB64 = id('btnCopyB64'),
     btnCopyTree = id('btnCopyTree'),
-    btnCopyValue = id('btnCopyValue');
+    btnCopyValue = id('btnCopyValue'),
+    btnCopyHexValue = id('btnCopyHexValue');
 
 export function bindContextMenu(node) {
     const type = node.asn1.typeName();
@@ -17,6 +18,7 @@ export function bindContextMenu(node) {
         contextMenu.style.visibility = 'visible';
         contextMenu.node = this;
         btnCopyValue.style.display = valueEnabled ? 'block' : 'none';
+        btnCopyHexValue.style.display = valueEnabled ? 'block' : 'none';
         event.preventDefault();
         event.stopPropagation();
     };
@@ -49,5 +51,11 @@ btnCopyTree.onclick = function (event) {
 btnCopyValue.onclick = function (event) {
     event.stopPropagation();
     navigator.clipboard.writeText(contextMenu.node.asn1.content());
+    close(event);
+};
+
+btnCopyHexValue.onclick = function(event) {
+    event.stopPropagation();
+    navigator.clipboard.writeText(contextMenu.node.asn1.toHexValue('byte'));
     close(event);
 };

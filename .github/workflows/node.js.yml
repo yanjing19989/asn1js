@@ -68,6 +68,7 @@ jobs:
           Beta Release created automatically by GitHub Actions.
           Build Number: ${{ github.run_number }}
           Commit: ${{ github.sha }}
+          Commit Message: ${{ github.event.head_commit.message }}
         prerelease: true
         files: |
           asn1js.zip

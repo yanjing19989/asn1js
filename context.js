@@ -64,8 +64,34 @@ btnCopyHexValue.onclick = function(event) {
 
 btnDownloadBinValue.onclick = function (event) {
     event.stopPropagation();
-    const startPos = contextMenu.node.asn1.posContent();
-    const endPos = contextMenu.node.asn1.posEnd();
+    let startPos = contextMenu.node.asn1.posContent();
+    let endPos = contextMenu.node.asn1.posEnd();
+    switch (contextMenu.node.asn1.tag.tagNumber) {
+    case 0x02: { // INTEGER
+        let v = contextMenu.node.asn1.stream.get(startPos),
+            neg = (v > 127),
+            pad = neg ? 255 : 0;
+        while (v == pad && ++startPos < endPos) {
+            v = contextMenu.node.asn1.stream.get(startPos);
+        }
+        if (startPos == endPos) {
+            startPos--;
+        }
+        break;
+    }
+    case 0x03: { // BIT_STRING
+        let padding = contextMenu.node.asn1.stream.get(startPos);
+        if (padding == 0) {
+            startPos++;
+        }
+        else {
+            endPos-=padding;
+        }
+        break;
+    }
+    default:
+        break;
+    }
     const byteArray = new Uint8Array(endPos - startPos);
     for (let i = startPos, j = 0; i < endPos; i++, j++) {
         byteArray[j] = contextMenu.node.asn1.stream.get(i);

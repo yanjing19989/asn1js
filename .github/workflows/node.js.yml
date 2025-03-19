@@ -25,3 +25,50 @@ jobs:
       if: matrix.node-version == 'latest'
     - run: npm run lint
       if: matrix.node-version == 'latest'
+    - name: Setup pnpm
+      if: matrix.node-version == 'latest'
+      uses: pnpm/action-setup@v2
+      with:
+        version: latest
+    - name: Create tags.js if not exists
+      if: matrix.node-version == 'latest'
+      run: |
+        if [ ! -f tags.js ]; then
+          echo "export const tags = {};" > tags.js
+        fi
+    - name: Run release script
+      if: matrix.node-version == 'latest'
+      run: |
+        chmod +x ./release.sh
+        sed -i 's/mtn automate tags/echo "Skipping mtn command"/' ./release.sh
+        sed -i 's/mtn automate certs/echo "Skipping mtn command"/' ./release.sh
+        sed -i 's/$SHA256 -t $FILES examples\/\* | gpg --clearsign > sha256sums.asc/find $FILES -type f | xargs $SHA256 > sha256sums.txt/' ./release.sh
+        sed -i 's/7z a -tzip -mx=9 asn1js.zip $FILES sha256sums.asc/7z a -tzip -mx=9 asn1js.zip $FILES sha256sums.txt/' ./release.sh
+        sed -i 's/rsync -Pvrtz asn1js.zip $FILES lapo.it:www\/asn1js\//echo "Skipping rsync command"/' ./release.sh
+        ./release.sh
+    - name: Upload asn1js.zip
+      if: matrix.node-version == 'latest'
+      uses: actions/upload-artifact@v4
+      with:
+        name: asn1js-zip
+        path: asn1js.zip
+    - name: Upload index-local.html
+      if: matrix.node-version == 'latest'
+      uses: actions/upload-artifact@v4
+      with:
+        name: index-local-html
+        path: index-local.html
+    - name: Create Beta Release
+      if: matrix.node-version == 'latest' && github.ref == 'refs/heads/trunk'
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: beta-${{ github.run_number }}
+        name: Beta Release ${{ github.run_number }}
+        body: |
+          Beta Release created automatically by GitHub Actions.
+          Build Number: ${{ github.run_number }}
+          Commit: ${{ github.sha }}
+        prerelease: true
+        files: |
+          asn1js.zip
+          index-local.html

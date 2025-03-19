@@ -68,11 +68,9 @@ btnDownloadBinValue.onclick = function (event) {
     let endPos = contextMenu.node.asn1.posEnd();
     switch (contextMenu.node.asn1.tag.tagNumber) {
     case 0x02: { // INTEGER
-        let v = contextMenu.node.asn1.stream.get(startPos),
-            neg = (v > 127),
-            pad = neg ? 255 : 0;
-        while (v == pad && ++startPos < endPos) {
-            v = contextMenu.node.asn1.stream.get(startPos);
+        let v = contextMenu.node.asn1.stream.get(startPos);
+        if (v == 0) {
+            startPos++;
         }
         if (startPos == endPos) {
             startPos--;

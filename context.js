@@ -5,7 +5,8 @@ const
     btnCopyB64 = id('btnCopyB64'),
     btnCopyTree = id('btnCopyTree'),
     btnCopyValue = id('btnCopyValue'),
-    btnCopyHexValue = id('btnCopyHexValue');
+    btnCopyHexValue = id('btnCopyHexValue'),
+    btnDownloadBinValue = id('btnDownloadBinValue');
 
 export function bindContextMenu(node) {
     const type = node.asn1.typeName();
@@ -19,6 +20,7 @@ export function bindContextMenu(node) {
         contextMenu.node = this;
         btnCopyValue.style.display = valueEnabled ? 'block' : 'none';
         btnCopyHexValue.style.display = valueEnabled ? 'block' : 'none';
+        btnDownloadBinValue.style.display = valueEnabled ? 'block' : 'none';
         event.preventDefault();
         event.stopPropagation();
     };
@@ -57,5 +59,23 @@ btnCopyValue.onclick = function (event) {
 btnCopyHexValue.onclick = function(event) {
     event.stopPropagation();
     navigator.clipboard.writeText(contextMenu.node.asn1.toHexValue('byte'));
+    close(event);
+};
+
+btnDownloadBinValue.onclick = function (event) {
+    event.stopPropagation();
+    const startPos = contextMenu.node.asn1.posContent();
+    const endPos = contextMenu.node.asn1.posEnd();
+    const byteArray = new Uint8Array(endPos - startPos);
+    for (let i = startPos, j = 0; i < endPos; i++, j++) {
+        byteArray[j] = contextMenu.node.asn1.stream.get(i);
+    }
+    const blob = new Blob([byteArray], { type: 'application/octet-stream' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'hex.bin';
+    a.click();
+    URL.revokeObjectURL(url);
     close(event);
 };
